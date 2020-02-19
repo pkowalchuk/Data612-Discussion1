@@ -1,0 +1,67 @@
+---
+title: "CUNY 622 - Discussion 1"
+author: "Peter Kowalchuk"
+date: "2/18/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Amazon claims to have a superior Recommendation Algorithm
+
+##Abstract
+
+Amazon's know how in recommendations systems needs no debate as the companies success in e-commercial surely serves as proof that it has found a way to capitalize on the commercial use of these algorithms. Regardless of what individual users might say, the overall success of the company is proof that the algorithm used is effective recommending visitors to its website items with high probability of being purchased by the user. Many algorithms exist to determine which items from a catalog should be presented to the user. But in an article on IEEE's Jan/Feb 2003 edition of IEEE Internet Computing, the claim is made that the algorithm in use by Amazon addresses the known shortcoming of the mainstream approaches. In this investigation discussion we revisit these shortcoming and try to assert wether Amazon's claim in the IEEE Computing Society publication deserve merit. 
+
+##Introduction
+
+Amazon's claim is that "unlike traditional collaborative filtering, their algorithm's online computation scales independently of the number of costumers and number of items in the product catalog". The article also claims it is able to do this without degrading the quality of the recommendations by segmenting the catalog, or reducing access to all items in any way. The article compares the advantages of the algorithm to collaborative filtering, cluster models and search methods. In this discussion however we will compare against the two main classifications of recommender systems, that is content based and collaborative filtering, both user and item based.
+
+##Traditional Collaborative Filtering
+
+There are many types of recommender system. From Editorial and Hand Curated where items are listed by a group pf individuals, to Sample Aggregates where the top 10 or most popular items are presented. But here we are dealing with  recommenders which present items tailored to the individual users. There are two main groups. Content Based where recommendations are made by presenting items which are similar to items already rated by the user. Collaborative filtering presents items based on reviews by a group of similar users, or grouping by similar items. 
+
+All of these recommenders work on what is called a Utility Matrix. This matrix simply present items in the catalog against users who have had some interaction with the items. this interaction might be rating or reviewing the items, or purchasing the same. These matrices are by nature very scarce, so doing operations such as loops thru all the rows and columns usually comes at a performance cost. How the different algorithms handle this cost can set them apart in practical terms. It is very unlike that an algorithm which takes long to produce a list of item results in an acceptable user experience.
+
+In our discussion, we look at Amazon's performance claim, more than its lack of quality degradation. Because in all cases we are using the entire utility matrix, recommendation quality is not in focus. We start by reviewing both Content Based and Collaborative Filtering, stating some of the pros and cons, and then present the Amazon algorithm, look into performance claims, and map traditional pros and cons to this new algorithm.
+
+###Content Based
+
+The main idea behind Content Based recommendations is to first define Item Profiles which describe each item in the catalog that the user likes. Second step is to infer a User Profiles for the user. Use the user profile has been established, that profile can be compared against all the items in the catalog and a similarity calculated for each. 
+
+Now what does this mean from a performance basis. For the first step, the algorithm has to be able to loop around all of the items a user likes and build a user profile from it. This actually might not be very costly as most users won't have liked, or reviewed many items in the catalog. But as the user interacts with more items in the catalog, the performance penalty increases.The second step in the algorithms does suffer on performance regardless of how much has the user interacted with the catalog. In this step the algorithm has to loop around each and every one of the items in the catalog to compare the user profile with each of the item profiles. While the item profiles can be calculated offline as they are the same for any user (which in itself is costly), the comparison of the item with the user profile will generally be done closer to real time as the user liking might change at any item, thus its user profile needs to be recalculated if not real time, very frequently to incorporate any changes. Similarity is usually calculated using Pearson correlation. As the catalog increases, it is easy to see how performance can degrade substantially.
+
+For the Amazon algorithm to performe better, it needs to overcome the need of looping around the entire catalog comparing profiles.
+
+###Collaborative Filtering
+
+In Collaborative Filtering we need to find a neiborhoud of users, or items, similar to the user's ratings. To define this group pf users, we need to define a vector fpr all users using all items reviewed by each user. Although single users might not have many items reviewed, in agregate most items in the catalog would have a review from a users. Once these vectors are defined, we now need to compare each vector to the users vector and determine silimarity, again usually using Pearson correlation (centered cosine similarity). So as the catalog increases, the real time calculation also increase. Even more, as more and more users submit their reviews, the calculation for all items for all users also increases. As before there is a direct degradation of performance as the utility matrix becomes larger in size, and less sparce.
+
+#Amazon's Algorithm, Item-to-Item Collaborative Filtering
+
+Amazon's algorithms is a variant of Collaborative Filtering where instead of matching user to users, items reviewed by the users are matched to groups of items similar to it. The key to Amazon's algorithm is that it build a table offline of the similarity of all pairs of items in the catalog. this is a very costly exercise, but one that does not include any users, so as opposed to the traditional approaches, it can be built offline. The table can be easily augmented each time a new item is added to the catalog by computing the similarities of this new item with those already in the catalog. Previous calculation do not need to be redone, just the new similarity of the new item. Similarity is calculated as before usually thru Person Correlation.
+
+In this method, once the user selects or reviews an item, the similarity table constructed offline is used to present items with high similarity to it. This is simply using a table which has already been calculated offline, and sorting to highest similarities.
+
+#Amazon's vs. Traditional Recommendations Filtering
+
+From the discussion it is clear Amazon's algorithm where a pre-computed items table is used in real time rather than on the fly calculation which degrade in performance as the utility matrix size and content increase, represent a much more effient and higer perforaming algorithm. Bur we can also compare some of the pros and cons of traditional filtering and how they relate to Amazon's approach.
+
+###Pros
+
+- No need for data on other users, same as Amazon's
+- Able to recommend to users with unique taste, also same as Amazon's since it is item based
+- Able to recomment new & unpopular itens, same as Amason's as long as those unique items have similaries which the item selected by user
+- Explanations for recommendations, are pretty much the same for both approaches
+
+###Cons
+
+- Finding the appropriate features is hard, can also affect Amazon's approach but here those hard to find feautures are not as relevant as all then need to be is equal among items for similarity to be calculated
+- Overspecialization, is not an issue with Amazon's as the first selection is done by the user so "hidden" items do not exist and any item can potentially be found
+- Cold-start, not an issue for Amazon since it does not rely on the users reviews, but t=rather of all users reviews, but a potential problem can be an item with little review from all users
+
+#Conclusion
+
+From the discussion we can see clear advantages in Amazon's approach. The ability to defier heavy calculations to offline and still produce robust recommendations in real time is a clear advantage of this approach. Also as can be seen in the pros and cons, many of the issues with traditional systems are also addressed.
